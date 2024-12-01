@@ -2,115 +2,111 @@ import random
 
 def checkRow(A, row):  
     refc = A[row][0]  
-    if refc == ' ':  # Check for empty  
+    if refc == ' ':  
         return None  
-    for i in range(1, 3):  # Only check the 3 cells in the row  
+    for i in range(1, 3):  
         if A[row][i] != refc:  
             return None  
-    return refc  # Return the winning character  
+    return refc  
 
 def checkCol(A, col):  
     refc = A[0][col]  
-    if refc == ' ':  # Check for empty  
+    if refc == ' ':  
         return None  
     for i in range(1, 3):  
         if A[i][col] != refc:  
             return None  
-    return refc  # Return the winning character  
+    return refc  
 
 def checkDiagLR(A):  
     refc = A[0][0]  
-    if refc == ' ':  # Check for empty  
+    if refc == ' ':  
         return None  
     for i in range(1, 3):  
         if A[i][i] != refc:  
             return None  
-    return refc  # Return the winning character  
+    return refc  
 
 def checkDiagRL(A):  
     refc = A[0][2]  
-    if refc == ' ':  # Check for empty  
+    if refc == ' ':  
         return None  
     for i in range(1, 3):  
         if A[i][2 - i] != refc:  
             return None  
-    return refc  # Return the winning character  
+    return refc  
 
 def checkMatrix(A):  
-    # Check rows and columns  
     for i in range(3):  
         if checkRow(A, i) is not None:  
             return checkRow(A, i)  
         if checkCol(A, i) is not None:  
             return checkCol(A, i)  
-
-    # Check diagonals  
+    
     if checkDiagLR(A) is not None:  
         return checkDiagLR(A)  
     if checkDiagRL(A) is not None:  
         return checkDiagRL(A)  
     
-    return None  # No winner 
-#function to calculate min no of steps till winning move
-#the optimal move is one with min value of No_of_Moves
+    return None  
 
-def No_of_Moves(A,row,col,curr=0):
-    min_moves = 1000
-    A[row][col] = 'O'
-    #base case
-    #already winning config
-    if checkMatrix(A)=='O':
-        A[row][col] = ' '
-        return curr
-    for i in range(3):
-        for j in range(3):
-            if A[i][j] == ' ':
-                A[i][j] = 'X'
-                if checkMatrix(A) == 'X':
-                    #If 'X' wins, return high score (to minimize this path) 
-                    ans = curr+1000
-                else:
-                    ans = No_of_Moves(A,i,j,curr+1)
-                min_moves = min(min_moves,ans)
-                A[i][j] = ' '
-    A[row][col] = ' '
-    return min_moves
-def willWin(A, row, col, ch):  
-    A[row][col] = ch 
-    is_winner = checkMatrix(A) ==ch
-    A[row][col] = ' '  # Undo move  
-    return is_winner 
-#function to select best move based on least number of moves
-def OptimalMove(A):
-    for i in range(3):
-        for j in range(3):
-            if A[i][j]==' ':
-                if willWin(A,i,j,'O'):
-                    return (i,j) #must occupy this position as it will lead to a win
-    for i in range(3):
-        for j in range(3):
-            if A[i][j]==' ':
-                if willWin(A,i,j,'X'):
-                    return (i,j) #must occupy this as otherwise opponent can win.
+def No_of_Moves(A, row, col, curr=0):  
+    min_moves = 1000  
+    A[row][col] = 'O'  
+    if checkMatrix(A) == 'O':  
+        A[row][col] = ' '  
+        return curr  
+    for i in range(3):  
+        for j in range(3):  
+            if A[i][j] == ' ':  
+                A[i][j] = 'X'  
+                if checkMatrix(A) == 'X':  
+                    ans = curr + 1000  
+                else:  
+                    ans = No_of_Moves(A, i, j, curr + 1)  
+                min_moves = min(min_moves, ans)  
+                A[i][j] = ' '  
+    A[row][col] = ' '  
+    return min_moves  
+
+def OptimalMove(A):  
+    # First, check for immediate winning moves  
+    for i in range(3):  
+        for j in range(3):  
+            if A[i][j] == ' ':  
+                A[i][j] = 'O'  
+                if checkMatrix(A) == 'O':  
+                    A[i][j] = ' '  
+                    return (i, j)   
+                A[i][j] = ' '  
+    
+    # Then, block opponent's possible winning moves  
+    for i in range(3):  
+        for j in range(3):  
+            if A[i][j] == ' ':  
+                A[i][j] = 'X'  
+                if checkMatrix(A) == 'X':  
+                    A[i][j] = ' '  
+                    return (i, j)   
+                A[i][j] = ' '  
                 
-    #else.select the optimal move based on min no_of_moves
-    min_moves = 1000
-    move = (-1, -1)  # Initial invalid move
-    for i in range(3):
-        for j in range(3):
-            if A[i][j] == ' ':
-                if No_of_Moves(A,i,j)<min_moves:
-                    min_moves = No_of_Moves(A,i,j)
-                    move = (i,j)
-    return move
+    # Lastly, pick the optimal move based on min no. of future moves  
+    min_moves = 1000  
+    move = (-1, -1)  
+    for i in range(3):  
+        for j in range(3):  
+            if A[i][j] == ' ':  
+                moves = No_of_Moves(A, i, j)  
+                if moves < min_moves:  
+                    min_moves = moves  
+                    move = (i, j)  
+    return move  
 
-# Function to print the current game board  
 def printBoard(A):  
     for row in A:  
         print("|".join(row))  
-        print("-" * 9)
+        print("-" * 9)  
 
-# Initialize the game  
 A = [[' ' for _ in range(3)] for _ in range(3)]  
 
 # Randomly place the first computer move  
@@ -118,24 +114,23 @@ while True:
     r = random.randint(0, 2)  
     c = random.randint(0, 2)  
     if A[r][c] == ' ':  
-        A[r][c] = 'O'  # Computer plays 'O'  
+        A[r][c] = 'O'  
         break  
 
 # Example game loop  
-while True: 
-    printBoard(A) 
+while True:   
+    printBoard(A)   
     
     # Check for a winner after the computer's move  
-    if checkMatrix(A):  
-         # Display the board again after computer's turn  
-        print("The winner is",checkMatrix(A))  
+    winner = checkMatrix(A)  
+    if winner:  
+        print("The winner is", winner)  
         break  
-    elif all(cell != ' ' for row in A for cell in row):  # Check for a draw  
+    
+    # Check for a draw before player's move  
+    if all(cell != ' ' for row in A for cell in row):  
         print("It's a draw!")  
-        break 
-    
-    
-
+        break   
 
     # Player's move input handling  
     while True:  
@@ -143,36 +138,60 @@ while True:
             player_row = int(input("Enter row number (0, 1, 2): "))  
             player_col = int(input("Enter column number (0, 1, 2): "))  
             if A[player_row][player_col] == ' ':  
-                A[player_row][player_col] = 'X'  # Simulate player move  
-                break  # Exit if the move is valid  
+                A[player_row][player_col] = 'X'  
+                break  
             else:  
                 print("Cell is already occupied. Please choose another.")  
         except (ValueError, IndexError):  
-            print("Invalid input. Please enter row and column numbers between 0 and 2.") 
+            print("Invalid input. Please enter row and column numbers between 0 and 2.")   
 
-# Check for a winner after the player's move  
-    if checkMatrix(A):  
-          # Display the board again after computer's turn  
-        print("The winner is",checkMatrix(A))  
-        break  
-    elif all(cell != ' ' for row in A for cell in row):  # Check for a draw  
+    # Check for a winner after the player's move  
+    winner = checkMatrix(A)  
+    if winner:  
+        printBoard(A)  
+        print("The winner is", winner)  
+        break
+    
+
+    # Check for a draw after the player's move  
+    if all(cell != ' ' for row in A for cell in row):  
+        printBoard(A)  
         print("It's a draw!")  
-        break 
+        break
+    empty = 0
+    for i in range(3):
+        for j in range(3):
+            if A[i][j]==' ':
+                empty = empty+1
+    if empty==1:
+        for i in range(3):
+            for j in range(3):
+                if A[i][j] ==' ':
+                    A[i][j] = 'O'
+                    if checkMatrix(A)!='O':
+                        print("It's a draw")
+                        break
+                    elif checkMatrix(A)=='O':
+                        print("The winner is O")
+                        break
 
     # Now computer makes a move  
     move = OptimalMove(A)  
     if move != (-1, -1):  
-        A[move[0]][move[1]] = 'O'  # Place 'O' in the best move  
+        A[move[0]][move[1]] = 'O'  
 
     # Check for a winner after the computer's move  
-    if checkMatrix(A):  
-          # Display the board again after computer's turn  
-        print("The winner is",checkMatrix(A))  
+    winner = checkMatrix(A)  
+    if winner:  
+        printBoard(A)  
+        print("The winner is", winner)  
         break  
-    elif all(cell != ' ' for row in A for cell in row):  # Check for a draw  
+
+    # Check for a draw after the computer's move  
+    if all(cell != ' ' for row in A for cell in row):  
+        printBoard(A)  
         print("It's a draw!")  
-        break  
+        break   
     
-# Final game output here  
-print("Game Over!")
+print("Game Over!")  
 printBoard(A)
